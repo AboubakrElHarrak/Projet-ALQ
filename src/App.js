@@ -18,6 +18,17 @@ function App() {
     { type: "rock", x: 1, y: 1 },
     { type: "paper", x: 10, y: 10 },
     { type: "scissors", x: 18, y: 18 },
+    { type: "scissors", x: 5, y: 5 },
+    { type: "rock", x: 7, y: 7 },
+    { type: "paper", x: 12, y: 12 },
+    { type: "scissors", x: 15, y: 15 },
+    { type: "rock", x: 1, y: 1 },
+    { type: "paper", x: 10, y: 10 },
+    { type: "scissors", x: 18, y: 18 },
+    { type: "scissors", x: 5, y: 5 },
+    { type: "rock", x: 7, y: 7 },
+    { type: "paper", x: 12, y: 12 },
+    { type: "scissors", x: 15, y: 15 },
   ]);
 
   function updateAgentsPosition() {
@@ -32,14 +43,10 @@ function App() {
     );
   }
 
-  grid[1][1] = 1;
-  grid[10][10] = 2;
-  grid[18][18] = 3;
-
   useEffect(() => {
     const intervalId = setInterval(() => {
       updateAgentsPosition();
-    }, 1000); // update position every 1 second
+    }, 100); // update position every 1 second
     return () => clearInterval(intervalId);
   }, []);
 
@@ -54,10 +61,9 @@ function App() {
           alignContent: "center",
         }}
       >
-        <Grid grid={grid} agents={agents} />
         <Routes>
           <Route>
-            {/* <Route path="/food" element={<Food foodCategories={foodCategories}/>} /> */}
+            <Route path="/" element={<Grid grid={grid} agents={agents} />} />
           </Route>
         </Routes>
       </main>
