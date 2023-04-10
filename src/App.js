@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Header } from "./header/header";
 import { Grid } from "./Grid/Grid";
 import { useState, useEffect, useRef } from "react";
+import Agent from "./agent";
 
 import {
   MDBBtn,
@@ -14,7 +15,7 @@ import {
   MDBModalTitle,
   MDBModalBody,
   MDBModalFooter,
-} from 'mdb-react-ui-kit';
+} from "mdb-react-ui-kit";
 
 function App() {
   const intervalIdRef = useRef(null);
@@ -30,100 +31,76 @@ function App() {
   }
 
   const [agents, setAgents] = useState([
-    { type: "rock", x: 1, y: 1 },
-    { type: "paper", x: 10, y: 10 },
-    { type: "paper", x: 18, y: 18 },
-    { type: "scissors", x: 2, y: 2 },
-    { type: "rock", x: 2, y: 1 },
-    { type: "paper", x: 7, y: 10 },
-    { type: "paper", x: 14, y: 18 },
-    { type: "scissors", x: 3, y: 3 },
-    { type: "rock", x: 7, y: 7 },
-    { type: "paper", x: 12, y: 12 },
-    { type: "rock", x: 15, y: 15 },
-    { type: "rock", x: 1, y: 1 },
-    { type: "paper", x: 10, y: 10 },
-    { type: "rock", x: 18, y: 18 },
-    { type: "scissors", x: 5, y: 5 },
-    { type: "rock", x: 7, y: 7 },
-    { type: "paper", x: 12, y: 12 },
-    { type: "scissors", x: 15, y: 15 },
+    new Agent("rock", 1, 1),
+    new Agent("paper", 10, 10),
+    new Agent("scissors", 2, 2),
+    new Agent("scissors", 2, 2),
+    new Agent("rock", 2, 1),
+    new Agent("paper", 7, 10),
+    new Agent("paper", 14, 18),
+    new Agent("scissors", 3, 3),
+    new Agent("rock", 7, 7),
+    new Agent("paper", 12, 12),
+    new Agent("rock", 15, 15),
+    new Agent("rock", 1, 1),
+    new Agent("paper", 10, 10),
+    new Agent("rock", 18, 18),
+    new Agent("scissors", 5, 5),
+    new Agent("rock", 7, 7),
+    new Agent("paper", 12, 12),
+    new Agent("scissors", 15, 15),
   ]);
 
   function updateAgentsPosition() {
-  setAgents((agents) => {
-    const allSameType = agents.every(
-      (agent, index, arr) => agent.type === arr[0].type
-    );
-    if (allSameType) {
-      clearInterval(intervalIdRef.current);
-      setWinner(agents[0].type);
-      setsimulationFinished(true);
-      return agents;
-    }
-    return agents.map((agent) => {
-      const dx = Math.floor(Math.random() * 3) - 1; // random x direction (-1, 0, 1)
-      const dy = Math.floor(Math.random() * 3) - 1; // random y direction (-1, 0, 1)
-      const x = Math.min(Math.max(agent.x + dx, 0), 19); // limit x position to [0, 19]
-      const y = Math.min(Math.max(agent.y + dy, 0), 19); // limit y position to [0, 19]
-
-      // collision detection
-      const collidingAgent = agents.find(
-        (a) => a.x === x && a.y === y && a !== agent
+    setAgents((agents) => {
+      const allSameType = agents.every(
+        (agent, index, arr) => agent.type === arr[0].type
       );
-      if (collidingAgent) {
-        if (collidingAgent.type === agent.type) {
-          // same type, keep moving randomly
-          return { ...agent, x, y };
-        } else {
-          // different type, determine winner based on rock-paper-scissors rules
-          const winnerType = getWinnerType(agent.type, collidingAgent.type);
-          const newType = agent.type === winnerType ? agent.type : collidingAgent.type;
-          return { ...agent, x, y, type: newType };
-        }
+      if (allSameType) {
+        clearInterval(intervalIdRef.current);
+        setWinner(agents[0].type);
+        setsimulationFinished(true);
+        return agents;
       }
-
-      return { ...agent, x, y };
+      return agents.map(
+        (agent) =>
+          new Agent(
+            agent.type,
+            agent.updatePosition(agents).x,
+            agent.updatePosition(agents).y
+          )
+      );
     });
-  });
-}
-
-function getWinnerType(type1, type2) {
-  if (type1 === type2) {
-    return type1;
   }
-  if (
-    (type1 === "rock" && type2 === "scissors") ||
-    (type1 === "scissors" && type2 === "paper") ||
-    (type1 === "paper" && type2 === "rock")
-  ) {
-    return type1;
-  }
-  return type2;
-}
 
-useEffect(() => {
+  useEffect(() => {
     intervalIdRef.current = setInterval(() => {
       updateAgentsPosition();
     }, 100); // update position every 1 second
     return () => clearInterval(intervalIdRef.current);
-}, []);
-  
+  }, []);
+
   const toggleShow = () => setsimulationFinished(false);
 
-  const WinnerPopUp = ({typeName}) => {
+  const WinnerPopUp = ({ typeName }) => {
     return (
-      <MDBModal show={simulationFinished} tabIndex='-1'>
+      <MDBModal show={simulationFinished} tabIndex="-1">
         <MDBModalDialog>
           <MDBModalContent>
             <MDBModalHeader>
               <MDBModalTitle>Résultat de la simulation</MDBModalTitle>
-              <MDBBtn className='btn-close' color='none' onClick={toggleShow}></MDBBtn>
+              <MDBBtn
+                className="btn-close"
+                color="none"
+                onClick={toggleShow}
+              ></MDBBtn>
             </MDBModalHeader>
-            <MDBModalBody><h1>{typeName} gangne !</h1></MDBModalBody>
+            <MDBModalBody>
+              <h1>{typeName} gangne !</h1>
+            </MDBModalBody>
 
             <MDBModalFooter>
-              <MDBBtn color='secondary' onClick={toggleShow}>
+              <MDBBtn color="secondary" onClick={toggleShow}>
                 Fermer
               </MDBBtn>
               <MDBBtn>Exporter les résultats</MDBBtn>
@@ -132,30 +109,36 @@ useEffect(() => {
         </MDBModalDialog>
       </MDBModal>
     );
-  }
-
+  };
 
   return (
     <>
-    <BrowserRouter>
-      <Header />
-      <main
-        className="w-75 mx-auto p-5"
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignContent: "center",
-        }}
-      >
-        <Routes>
-          <Route>
-            <Route path="/" element={<Grid grid={grid} agents={agents} />} />
-          </Route>
+      <BrowserRouter>
+        <Header />
+        <main
+          className="w-75 mx-auto p-5"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignContent: "center",
+          }}
+        >
+          <Routes>
+            <Route>
+              <Route path="/" element={<Grid grid={grid} agents={agents} />} />
+            </Route>
           </Routes>
         </main>
         <WinnerPopUp
-          typeName={winner === "rock" ? "Pierre" : winner === "scissors" ? "Ciseaux" : "Feuille "}
-          onClose={() => setsimulationFinished(false)}/>
+          typeName={
+            winner === "rock"
+              ? "Pierre"
+              : winner === "scissors"
+              ? "Ciseaux"
+              : "Feuille "
+          }
+          onClose={() => setsimulationFinished(false)}
+        />
       </BrowserRouter>
     </>
   );
