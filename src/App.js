@@ -62,14 +62,10 @@ function App() {
         setsimulationFinished(true);
         return agents;
       }
-      return agents.map(
-        (agent) =>
-          new Agent(
-            agent.type,
-            agent.updatePosition(agents).x,
-            agent.updatePosition(agents).y
-          )
-      );
+      return agents.map((agent) => {
+        agent.updatePosition(agents);
+        return new Agent(agent.type, agent.x, agent.y);
+      });
     });
   }
 
