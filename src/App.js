@@ -31,24 +31,24 @@ function App() {
   }
 
   const [agents, setAgents] = useState([
-    new Agent("rock", 1, 1),
-    new Agent("paper", 10, 10),
-    new Agent("scissors", 2, 2),
-    new Agent("scissors", 2, 2),
-    new Agent("rock", 2, 1),
-    new Agent("paper", 7, 10),
-    new Agent("paper", 14, 18),
-    new Agent("scissors", 3, 3),
-    new Agent("rock", 7, 7),
-    new Agent("paper", 12, 12),
-    new Agent("rock", 15, 15),
-    new Agent("rock", 1, 1),
-    new Agent("paper", 10, 10),
-    new Agent("rock", 18, 18),
-    new Agent("scissors", 5, 5),
-    new Agent("rock", 7, 7),
-    new Agent("paper", 12, 12),
-    new Agent("scissors", 15, 15),
+    new Agent("rock", 2, 2, 2),
+    new Agent("paper", 3, 2),
+    //new Agent("scissors", 1, 3),
+    // new Agent("scissors", 2, 2),
+    // new Agent("rock", 2, 1),
+    // new Agent("paper", 7, 10),
+    // new Agent("paper", 14, 18),
+    // new Agent("scissors", 3, 3),
+    // new Agent("rock", 7, 7),
+    // new Agent("paper", 12, 12),
+    // new Agent("rock", 15, 15),
+    // new Agent("rock", 1, 1),
+    // new Agent("paper", 10, 10),
+    // new Agent("rock", 18, 18),
+    // new Agent("scissors", 5, 5),
+    // new Agent("rock", 7, 7),
+    // new Agent("paper", 12, 12),
+    // new Agent("scissors", 15, 15),
   ]);
 
   function updateAgentsPosition() {
@@ -62,10 +62,13 @@ function App() {
         setsimulationFinished(true);
         return agents;
       }
-      return agents.map((agent) => {
-        agent.updatePosition(agents);
-        return new Agent(agent.type, agent.x, agent.y);
-      });
+      // return agents.map((agent) => {
+      //   agent.updatePosition(agents);
+      //   return new Agent(agent.type, agent.x, agent.y);
+      // });
+      //agents.forEach(agent => agent.calculateNextPosition(agents));
+      //agents[0].calculateNextPosition(agents);
+      return agents;
     });
   }
 
