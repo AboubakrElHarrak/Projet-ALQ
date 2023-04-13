@@ -31,10 +31,10 @@ function App() {
   }
 
   const [agents, setAgents] = useState([
-    new Agent("rock", 2, 2, 2),
-    new Agent("paper", 3, 2),
-    //new Agent("scissors", 1, 3),
-    // new Agent("scissors", 2, 2),
+    new Agent("rock", 2, 2, 4),
+    new Agent("scissors", 4, 4),
+    new Agent("scissors", 0, 4, 4),
+    //new Agent("scissors", 3, 3),
     // new Agent("rock", 2, 1),
     // new Agent("paper", 7, 10),
     // new Agent("paper", 14, 18),
@@ -62,20 +62,27 @@ function App() {
         setsimulationFinished(true);
         return agents;
       }
-      // return agents.map((agent) => {
-      //   agent.updatePosition(agents);
-      //   return new Agent(agent.type, agent.x, agent.y);
-      // });
+      return agents.map((agent) => {
+
+        if (agent === agents[0]) {
+          agent.calculateNextPosition(agents);
+        } else {
+          agent.updatePosition(agents, agent.x, agent.y);
+        }
+        return new Agent(agent.type, agent.x, agent.y, agent.intelligence);
+      });
+
       //agents.forEach(agent => agent.calculateNextPosition(agents));
+
       //agents[0].calculateNextPosition(agents);
-      return agents;
+      //return agents;
     });
   }
 
   useEffect(() => {
     intervalIdRef.current = setInterval(() => {
       updateAgentsPosition();
-    }, 100); // update position every 1 second
+    }, 2000); // update position every 1 second
     return () => clearInterval(intervalIdRef.current);
   }, []);
 

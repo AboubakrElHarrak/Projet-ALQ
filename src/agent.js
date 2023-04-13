@@ -6,38 +6,25 @@ class Agent {
     this.intelligence = intelligence;
   }
 
-  updatePosition(agents) {
+  updatePosition(agents, x, y) {
+    this.x = x;
+    this.y = y;
+    this.detectCollision(agents, x, y);
     
-    //random
-    const dx = Math.floor(Math.random() * 3) - 1; // random x direction (-1, 0, 1)
-    const dy = Math.floor(Math.random() * 3) - 1; // random y direction (-1, 0, 1)
-    const x = Math.min(Math.max(this.x + dx, 0), 19); // limit x position to [0, 19]
-    const y = Math.min(Math.max(this.y + dy, 0), 19); // limit y position to [0, 19]
+  }
 
-    //intelligent
-    
-
+  detectCollision(agents, x, y) {
     // collision detection
     const collidingAgent = agents.find(
       (a) => a.x === x && a.y === y && a !== this
     );
     if (collidingAgent) {
-      if (collidingAgent.type === this.type) {
-        // same type, keep moving randomly
-        this.x = x;
-        this.y = y;
-      } else {
+      if (collidingAgent.type !== this.type) {
         // different type, determine winner based on rock-paper-scissors rules
         const winnerType = getWinnerType(this.type, collidingAgent.type);
-        const newType =
-          this.type === winnerType ? this.type : collidingAgent.type;
-        this.x = x;
-        this.y = y;
+        const newType = this.type === winnerType ? this.type : collidingAgent.type;
         this.type = newType;
-      }
-    } else {
-      this.x = x;
-      this.y = y;
+      } 
     }
   }
 
@@ -84,38 +71,107 @@ class Agent {
 
     var nextPosition;
     
+  //if agents_adjacents.length = 0 we choose the next position based on other rules (for example random movement)
     if (agents_adjacents.length > 0) {
-      nextPosition = { x: agents_adjacents[0].x - (this.intelligence - 1), y: agents_adjacents[0].y - (this.intelligence - 1)};
 
-      tableau_adjacent.forEach(position => {
-        if (
-          Math.sqrt(
-            Math.pow((position.x - agents_adjacents[0].x), 2) + Math.pow((position.y - agents_adjacents[0].y), 2)
-          )
+      const tab_final_scores = [];
 
-          >=
+      tableau_adjacent.forEach(item => tab_final_scores.push({ position: item, finalScore: 0 }));
 
-          Math.sqrt(
-            Math.pow((nextPosition.x - agents_adjacents[0].x), 2) + Math.pow((nextPosition.y - agents_adjacents[0].y), 2)
-          )
-        )
+      for (let i = 0; i < agents_adjacents.length; i++) {
 
-        {
-          nextPosition = {x: position.x, y: position.y}
+        const info_tableau_adjacent = [];
+
+
+        tableau_adjacent.forEach(item => info_tableau_adjacent.push({ position: item, distance: 0, score: 0 }));
+        
+        nextPosition = { x: agents_adjacents[i].x - (this.intelligence - 1), y: agents_adjacents[i].y - (this.intelligence - 1) };
+
+        info_tableau_adjacent.forEach(item => {
+          
+          //calculate distance between current item and current enemy agent
+          item.distance = distance(item.position, agents_adjacents[i]);
+
+        });
+        
+        //condition on agents_adjacents[i].type then sort array based on distance
+        if (this.type === agents_adjacents[i].type) {
+          //escape from other agent
+          trier_cases_desc(info_tableau_adjacent);
+        } else {
+          if (getWinnerType(this.type, agents_adjacents[i].type) === this.type) {
+            //get close to other agent
+            trier_cases_asc(info_tableau_adjacent);
+            
+          } else {
+            //escape from other agent
+            trier_cases_desc(info_tableau_adjacent);
+          }
+        } 
+        
+
+        //assign scores
+        for (let i = 0; i < info_tableau_adjacent.length; i++) {
+              info_tableau_adjacent[i].score = i + 1;
         }
-      });
+
+        //update final scores
+        tab_final_scores.forEach(
+          item => {
+            info_tableau_adjacent.forEach(
+              info => {
+                if (info.position === item.position) {
+                  item.finalScore += info.score;
+                }
+              }
+            )
+          }
+        );
+            
+      }
+
+      nextPosition = tab_final_scores.reduce((prev, curr) => prev.finalScore < curr.finalScore ? prev : curr).position;
+
+      console.log("tab_final_scores : ");
+      console.log(tab_final_scores);
+      this.updatePosition(agents, nextPosition.x, nextPosition.y);
+    }
+    
+    //random
+    else {
+      
+      const dx = Math.floor(Math.random() * 3) - 1; // random x direction (-1, 0, 1)
+      const dy = Math.floor(Math.random() * 3) - 1; // random y direction (-1, 0, 1)
+      const x = Math.min(Math.max(this.x + dx, 0), 19); // limit x position to [0, 19]
+      const y = Math.min(Math.max(this.y + dy, 0), 19); // limit y position to [0, 19]
+
+      this.updatePosition(agents, x, y);
     }
 
 
     
     //const output = 'next Position ' + this.x + ' ' + this.y + ' -> ' + this.x + ' ' + this.y;
     
+    console.log("voisinage : ");
     console.log(voisinage);
+
+    console.log("tableau_adjacent : ");
     console.log(tableau_adjacent);
+
+    console.log("agents_adjacents : ");
     console.log(agents_adjacents);
+
+    console.log("nextPosition : ");
     console.log(nextPosition);
   }
+
 }
+
+function distance(position, position0) {
+    return Math.sqrt(Math.pow((position.x - position0.x), 2) + Math.pow((position.y - position0.y), 2));
+  }
+
+
 
 function getWinnerType(type1, type2) {
   if (type1 === type2) {
@@ -129,6 +185,36 @@ function getWinnerType(type1, type2) {
     return type1;
   }
   return type2;
+}
+
+function trier_cases_desc(tab){
+    var changed;
+    do{
+        changed = false;
+        for(var i=0; i < tab.length-1; i++) {
+            if(tab[i].distance < tab[i+1].distance) {
+                var tmp = tab[i];
+                tab[i] = tab[i+1];
+                tab[i+1] = tmp;
+                changed = true;
+            }
+        }
+    } while(changed);
+}
+
+function trier_cases_asc(tab){
+    var changed;
+    do{
+        changed = false;
+        for(var i=0; i < tab.length-1; i++) {
+            if(tab[i].distance > tab[i+1].distance) {
+                var tmp = tab[i];
+                tab[i] = tab[i+1];
+                tab[i+1] = tmp;
+                changed = true;
+            }
+        }
+    } while(changed);
 }
 
 export default Agent;
