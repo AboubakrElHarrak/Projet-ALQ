@@ -7,6 +7,17 @@ import { useState, useEffect, useRef } from "react";
 import Agent from "./agent";
 
 import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Bar } from "react-chartjs-2";
+
+import {
   MDBBtn,
   MDBModal,
   MDBModalDialog,
@@ -16,6 +27,28 @@ import {
   MDBModalBody,
   MDBModalFooter,
 } from "mdb-react-ui-kit";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+export const options = {
+  responsive: true,
+  plugins: {
+    legend: {
+      position: "top",
+    },
+    title: {
+      display: true,
+      text: "Chart.js Bar Chart",
+    },
+  },
+};
 
 function App() {
   const intervalIdRef = useRef(null);
@@ -51,6 +84,49 @@ function App() {
     // new Agent("scissors", 15, 15),
   ]);
 
+  const labels = ["rock", "paper", "scissors"];
+
+  const [data, setData] = useState({
+    labels,
+    datasets: [
+      {
+        label: "Dataset 1",
+        data: [0, 0, 0],
+        backgroundColor: "rgba(255, 99, 132, 0.5)",
+      },
+    ],
+  });
+
+  useEffect(() => {
+    const agentsDetails = () => {
+      const agentsMap = new Map();
+
+      labels.forEach((label) => agentsMap.set(label, 0));
+
+      agents.forEach((agent) => {
+        let agentCount = agentsMap.get(agent.type) || 0;
+        agentsMap.set(agent.type, agentCount + 1);
+      });
+      let result = [];
+
+      for (let entry of agentsMap.entries()) {
+        result.push({ agentType: entry[0], agentCount: entry[1] });
+      }
+      return result;
+    };
+
+    setData({
+      labels: agentsDetails().map((agentDetails) => agentDetails.agentType),
+      datasets: [
+        {
+          label: "Dataset 1",
+          data: agentsDetails().map((agentDetails) => agentDetails.agentCount),
+          backgroundColor: "rgba(255, 99, 132, 0.5)",
+        },
+      ],
+    });
+  }, [agents]);
+
   function updateAgentsPosition() {
     setAgents((agents) => {
       const allSameType = agents.every(
@@ -63,7 +139,6 @@ function App() {
         return agents;
       }
       return agents.map((agent) => {
-
         if (agent === agents[0]) {
           agent.calculateNextPosition(agents);
         } else {
@@ -87,7 +162,6 @@ function App() {
   }, []);
 
   const toggleShow = () => setsimulationFinished(false);
-
   const WinnerPopUp = ({ typeName }) => {
     return (
       <MDBModal show={simulationFinished} tabIndex="-1">
@@ -126,12 +200,20 @@ function App() {
           style={{
             display: "flex",
             justifyContent: "center",
-            alignContent: "center",
+            flexDirection: "column",
           }}
         >
           <Routes>
             <Route>
-              <Route path="/" element={<Grid grid={grid} agents={agents} />} />
+              <Route
+                path="/"
+                element={
+                  <>
+                    <Grid grid={grid} agents={agents} />
+                    <Bar style={{ width: 20 }} options={options} data={data} />
+                  </>
+                }
+              />
             </Route>
           </Routes>
         </main>
