@@ -15,7 +15,8 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { Bar } from "react-chartjs-2";
+import { Bar, Chart, Line } from "react-chartjs-2";
+import 'chart.js/auto';
 
 import {
   MDBBtn,
@@ -38,19 +39,34 @@ ChartJS.register(
 );
 
 export const options = {
-  responsive: true,
+  responsive: true,  
   plugins: {
     legend: {
-      position: "top",
+        display: false
     },
     title: {
       display: true,
-      text: "Chart.js Bar Chart",
+      text: "Current Agent distribution",
     },
-  },
+  }
+};
+
+export const options2 = {
+  responsive: true,  
+  plugins: {
+    legend: {
+        display: false
+    },
+    title: {
+      display: true,
+      text: "Simulation progress",
+    },
+  }
 };
 
 function App() {
+  const Ref = useRef();
+
   const intervalIdRef = useRef(null);
   const [winner, setWinner] = useState(null);
   const [simulationFinished, setsimulationFinished] = useState(false);
@@ -66,22 +82,26 @@ function App() {
   const [agents, setAgents] = useState([
     new Agent("rock", 2, 2, 4),
     new Agent("scissors", 4, 4),
-    new Agent("scissors", 0, 4, 4),
-    //new Agent("scissors", 3, 3),
-    // new Agent("rock", 2, 1),
-    // new Agent("paper", 7, 10),
-    // new Agent("paper", 14, 18),
-    // new Agent("scissors", 3, 3),
-    // new Agent("rock", 7, 7),
-    // new Agent("paper", 12, 12),
-    // new Agent("rock", 15, 15),
-    // new Agent("rock", 1, 1),
-    // new Agent("paper", 10, 10),
-    // new Agent("rock", 18, 18),
-    // new Agent("scissors", 5, 5),
-    // new Agent("rock", 7, 7),
-    // new Agent("paper", 12, 12),
-    // new Agent("scissors", 15, 15),
+    new Agent("scissors", 0, 4),
+    new Agent("scissors", 3, 3, 2),
+    new Agent("rock", 2, 1, 5),
+    new Agent("paper", 7, 10, 4),
+    new Agent("paper", 14, 18, 3),
+    new Agent("scissors", 3, 3),
+    new Agent("rock", 7, 7, 3),
+    new Agent("paper", 12, 12, 2),
+    new Agent("rock", 15, 15, 2),
+    new Agent("rock", 1, 1, 2),
+    new Agent("paper", 10, 10, 4),
+    new Agent("rock", 18, 18, 3),
+    new Agent("scissors", 5, 5, 2),
+    new Agent("rock", 7, 7, 3),
+    new Agent("paper", 12, 12),
+    new Agent("scissors", 15, 15),
+  ]);
+
+  const [lineChartData, setLineChartData] = useState([
+    {nbRock: 0, nbPaper: 0, nbScissors: 0, step: 0}
   ]);
 
   const labels = ["rock", "paper", "scissors"];
@@ -90,7 +110,16 @@ function App() {
     labels,
     datasets: [
       {
-        label: "Dataset 1",
+        data: [0, 0, 0],
+        backgroundColor: "rgba(255, 99, 132, 0.5)",
+      },
+    ],
+  });
+
+  const [data2, setData2] = useState({
+    labels: [],
+    datasets: [
+      {
         data: [0, 0, 0],
         backgroundColor: "rgba(255, 99, 132, 0.5)",
       },
@@ -119,13 +148,41 @@ function App() {
       labels: agentsDetails().map((agentDetails) => agentDetails.agentType),
       datasets: [
         {
-          label: "Dataset 1",
           data: agentsDetails().map((agentDetails) => agentDetails.agentCount),
-          backgroundColor: "rgba(255, 99, 132, 0.5)",
+          backgroundColor: ["rgba(255, 99, 132, 0.5)", "rgba(0, 99, 132, 0.5)", "rgba(255, 99, 0, 0.5)"],
+        },
+      ],
+    });
+
+    let _step = lineChartData[lineChartData.length - 1].step;
+
+    setLineChartData(
+      [...lineChartData, {nbRock: agentsDetails()[0].agentCount, nbPaper: agentsDetails()[1].agentCount, nbScissors: agentsDetails()[2].agentCount, step: _step + 1}]
+    );
+    // [{nbRock: 1, nbPaper: 1, nbScissors: 1, instant: 500}, {nbRock: 1, nbPaper: 0, nbScissors: 2, instant: 600}]
+
+    setData2({
+      labels: lineChartData.map((item) => item.step),
+      datasets: [
+        {
+          label: "Rock",
+          data: lineChartData.map((item) => item.nbRock),
+          backgroundColor: ["rgba(255, 99, 132, 0.5)"],
+        },
+        {
+          label: "Paper",
+          data: lineChartData.map((item) => item.nbPaper),
+          backgroundColor: ["rgba(0, 99, 132, 0.5)"],
+        },
+        {
+          label: "Scissors",
+          data: lineChartData.map((item) => item.nbScissors),
+          backgroundColor: ["rgba(255, 99, 0, 0.5)"],
         },
       ],
     });
   }, [agents]);
+
 
   function updateAgentsPosition() {
     setAgents((agents) => {
@@ -139,11 +196,7 @@ function App() {
         return agents;
       }
       return agents.map((agent) => {
-        if (agent === agents[0]) {
-          agent.calculateNextPosition(agents);
-        } else {
-          agent.updatePosition(agents, agent.x, agent.y);
-        }
+        agent.calculateNextPosition(agents);
         return new Agent(agent.type, agent.x, agent.y, agent.intelligence);
       });
 
@@ -157,7 +210,7 @@ function App() {
   useEffect(() => {
     intervalIdRef.current = setInterval(() => {
       updateAgentsPosition();
-    }, 2000); // update position every 1 second
+    }, 100); // update position every 0.1 second
     return () => clearInterval(intervalIdRef.current);
   }, []);
 
@@ -196,11 +249,11 @@ function App() {
       <BrowserRouter>
         <Header />
         <main
-          className="w-75 mx-auto p-5"
+          className="mx-auto p-5"
           style={{
             display: "flex",
             justifyContent: "center",
-            flexDirection: "column",
+            flexDirection: "row",
           }}
         >
           <Routes>
@@ -210,7 +263,10 @@ function App() {
                 element={
                   <>
                     <Grid grid={grid} agents={agents} />
-                    <Bar style={{ width: 20 }} options={options} data={data} />
+                    <div class="chart-container" style={{position: "relative", width: "30vw", marginLeft: "5vw"}}>
+                      <Bar options={options} data={data} />
+                      <Line ref={Ref} options={options2} data={data2} style={{marginTop: "15%"}}/>
+                    </div>
                   </>
                 }
               />
