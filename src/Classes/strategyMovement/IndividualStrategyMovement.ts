@@ -37,7 +37,7 @@ export class IndividualStrategyMovement implements StrategyMovement{
             changed = false;
             for(var i=0; i < tab.length-1; i++) {
                 if(tab[i].distance < tab[i+1].distance) {
-                    var tmp : t_info_tableau_adjacent = tab[i];
+                    var tmp = tab[i];
                     tab[i] = tab[i+1];
                     tab[i+1] = tmp;
                     changed = true;
@@ -52,7 +52,7 @@ export class IndividualStrategyMovement implements StrategyMovement{
             changed = false;
             for(var i=0; i < tab.length-1; i++) {
                 if(tab[i].distance > tab[i+1].distance) {
-                    var tmp : t_info_tableau_adjacent= tab[i];
+                    var tmp = tab[i];
                     tab[i] = tab[i+1];
                     tab[i+1] = tmp;
                     changed = true;
@@ -124,7 +124,7 @@ export class IndividualStrategyMovement implements StrategyMovement{
     agents.forEach(__agent => {
       voisinage.forEach(position => {
         if (__agent.getX() === position.x && __agent.getY() === position.y) {
-          agents_adjacents.push(agent);
+          agents_adjacents.push(__agent);
         }
       })
     });
@@ -153,6 +153,7 @@ export class IndividualStrategyMovement implements StrategyMovement{
           item.distance = this.distance(item.position, agents_adjacents[i]);
 
         });
+        
         
         //condition on agents_adjacents[i].type then sort array based on distance
         if (agent.getType() === agents_adjacents[i].getType()) {

@@ -28,6 +28,7 @@ import {
   MDBModalBody,
   MDBModalFooter,
 } from "mdb-react-ui-kit";
+import { IndividualAgent } from "./Classes/Agent/IndividualAgent";
 
 ChartJS.register(
   CategoryScale,
@@ -80,24 +81,24 @@ function App() {
   }
 
   const [agents, setAgents] = useState([
-    new Agent("rock", 2, 2, 4),
-    new Agent("scissors", 4, 4),
-    new Agent("scissors", 0, 4),
-    new Agent("scissors", 3, 3, 2),
-    new Agent("rock", 2, 1, 5),
-    new Agent("paper", 7, 10, 4),
-    new Agent("paper", 14, 18, 3),
-    new Agent("scissors", 3, 3),
-    new Agent("rock", 7, 7, 3),
-    new Agent("paper", 12, 12, 2),
-    new Agent("rock", 15, 15, 2),
-    new Agent("rock", 1, 1, 2),
-    new Agent("paper", 10, 10, 4),
-    new Agent("rock", 18, 18, 3),
-    new Agent("scissors", 5, 5, 2),
-    new Agent("rock", 7, 7, 3),
-    new Agent("paper", 12, 12),
-    new Agent("scissors", 15, 15),
+    new IndividualAgent("rock", 1, 1, 4),
+    new IndividualAgent("scissors", 3, 3),
+    new IndividualAgent("scissors", 0, 4),
+    new IndividualAgent("scissors", 3, 3, 2),
+    new IndividualAgent("rock", 2, 1, 5),
+    new IndividualAgent("paper", 7, 10, 4),
+    new IndividualAgent("paper", 14, 18, 3),
+    new IndividualAgent("scissors", 3, 3),
+    new IndividualAgent("rock", 7, 7, 3),
+    new IndividualAgent("paper", 12, 12, 2),
+    new IndividualAgent("rock", 15, 15, 2),
+    new IndividualAgent("rock", 1, 1, 2),
+    new IndividualAgent("paper", 10, 10, 4),
+    new IndividualAgent("rock", 18, 18, 3),
+    new IndividualAgent("scissors", 5, 5, 2),
+    new IndividualAgent("rock", 7, 7, 3),
+    new IndividualAgent("paper", 12, 12),
+    new IndividualAgent("scissors", 15, 15),
   ]);
 
   const [lineChartData, setLineChartData] = useState([
@@ -111,7 +112,7 @@ function App() {
     datasets: [
       {
         data: [0, 0, 0],
-        backgroundColor: "rgba(255, 99, 132, 0.5)",
+        backgroundColor: ["rgba(255, 99, 132, 0.5)", "rgba(0, 99, 132, 0.5)", "rgba(255, 99, 0, 0.5)"],
       },
     ],
   });
@@ -120,8 +121,9 @@ function App() {
     labels: [],
     datasets: [
       {
+        label: "",
         data: [0, 0, 0],
-        backgroundColor: "rgba(255, 99, 132, 0.5)",
+        backgroundColor: ["rgba(255, 99, 132, 0.5)"],
       },
     ],
   });
@@ -133,8 +135,8 @@ function App() {
       labels.forEach((label) => agentsMap.set(label, 0));
 
       agents.forEach((agent) => {
-        let agentCount = agentsMap.get(agent.type) || 0;
-        agentsMap.set(agent.type, agentCount + 1);
+        let agentCount = agentsMap.get(agent.getType()) || 0;
+        agentsMap.set(agent.getType(), agentCount + 1);
       });
       let result = [];
 
@@ -187,17 +189,17 @@ function App() {
   function updateAgentsPosition() {
     setAgents((agents) => {
       const allSameType = agents.every(
-        (agent, index, arr) => agent.type === arr[0].type
+        (agent, index, arr) => agent.getType() === arr[0].getType()
       );
       if (allSameType) {
         clearInterval(intervalIdRef.current);
-        setWinner(agents[0].type);
+        setWinner(agents[0].getType());
         setsimulationFinished(true);
         return agents;
       }
       return agents.map((agent) => {
-        agent.calculateNextPosition(agents);
-        return new Agent(agent.type, agent.x, agent.y, agent.intelligence);
+        agent.behave(agents);
+        return new IndividualAgent(agent.getType(), agent.getX(), agent.getY(), agent.getIntelligence());
       });
 
       //agents.forEach(agent => agent.calculateNextPosition(agents));
@@ -263,7 +265,7 @@ function App() {
                 element={
                   <>
                     <Grid grid={grid} agents={agents} />
-                    <div class="chart-container" style={{position: "relative", width: "30vw", marginLeft: "5vw"}}>
+                    <div className="chart-container" style={{position: "relative", width: "30vw", marginLeft: "5vw"}}>
                       <Bar options={options} data={data} />
                       <Line ref={Ref} options={options2} data={data2} style={{marginTop: "15%"}}/>
                     </div>
@@ -281,7 +283,6 @@ function App() {
               ? "Ciseaux"
               : "Feuille "
           }
-          onClose={() => setsimulationFinished(false)}
         />
       </BrowserRouter>
     </>

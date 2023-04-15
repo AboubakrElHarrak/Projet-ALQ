@@ -7,7 +7,7 @@ export class IndividualAgent extends Agent {
     private y : number;
     private intelligence: number;
     
-    constructor(_x: number, _y: number, _type: string, _intellegence: number) {
+    constructor( _type: string, _x: number, _y: number, _intellegence: number = 1) {
         super(new IndividualStrategyMovement(), _type);
         this.x = _x;
         this.y = _y;
