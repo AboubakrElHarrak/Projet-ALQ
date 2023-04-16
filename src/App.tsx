@@ -4,7 +4,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Header } from "./header/header";
 import { Grid } from "./Grid/Grid";
 import { useState, useEffect, useRef } from "react";
-import Agent from "./agent";
 
 import {
   Chart as ChartJS,
@@ -15,8 +14,8 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { Bar, Chart, Line } from "react-chartjs-2";
-import 'chart.js/auto';
+import { Bar, Line } from "react-chartjs-2";
+import "chart.js/auto";
 
 import {
   MDBBtn,
@@ -30,8 +29,9 @@ import {
 } from "mdb-react-ui-kit";
 import { IndividualAgent } from "./Classes/Agent/IndividualAgent";
 import { AgentGroup } from "./Classes/Agent/AgentGroup";
-import MyModal from "./Initialization/Initialization";
 import { AgentsContext } from "./AgentsContext/AgentsContext";
+import ModalComponent from "./Initialization/Initialization";
+import { Button } from "react-bootstrap";
 
 ChartJS.register(
   CategoryScale,
@@ -43,32 +43,34 @@ ChartJS.register(
 );
 
 export const options = {
-  responsive: true,  
+  responsive: true,
   plugins: {
     legend: {
-        display: false
+      display: false,
     },
     title: {
       display: true,
       text: "Current Agent distribution",
     },
-  }
+  },
 };
 
 export const options2 = {
-  responsive: true,  
+  responsive: true,
   plugins: {
     legend: {
-        display: false
+      display: false,
     },
     title: {
       display: true,
       text: "Simulation progress",
     },
-  }
+  },
 };
 
 function App() {
+  const [showModal, setShowModal] = useState(false);
+
   const Ref = useRef();
 
   const intervalIdRef = useRef(null);
@@ -83,17 +85,15 @@ function App() {
     }
   }
 
-  let RockGroup = new AgentGroup("rock",
-    [
-      new IndividualAgent("rock", 1, 1, 4),
-      new IndividualAgent("rock", 2, 2, 5),
-      new IndividualAgent("rock", 3, 3, 3),
-      new IndividualAgent("rock", 4, 4, 2),
-      new IndividualAgent("rock", 1, 5, 2),
-      new IndividualAgent("rock", 1, 3, 3),
-      new IndividualAgent("rock", 4, 2, 3)
-    ]
-  );
+  let RockGroup = new AgentGroup("rock", [
+    new IndividualAgent("rock", 1, 1, 4),
+    new IndividualAgent("rock", 2, 2, 5),
+    new IndividualAgent("rock", 3, 3, 3),
+    new IndividualAgent("rock", 4, 4, 2),
+    new IndividualAgent("rock", 1, 5, 2),
+    new IndividualAgent("rock", 1, 3, 3),
+    new IndividualAgent("rock", 4, 2, 3),
+  ]);
 
   const [agents, setAgents] = useState([
     // new IndividualAgent("rock", 1, 1, 4),
@@ -114,7 +114,7 @@ function App() {
     // new IndividualAgent("rock", 7, 7, 3),
     new IndividualAgent("paper", 12, 12),
     new IndividualAgent("scissors", 15, 15),
-    ...RockGroup.getListAgents()
+    ...RockGroup.getListAgents(),
   ]);
 
   ///////////////////////////////////////////////////////////////////////////////////////
@@ -124,7 +124,7 @@ function App() {
   ///////////////////////////////////////////////////////////////////////////////////////
 
   const [lineChartData, setLineChartData] = useState([
-    {nbRock: 0, nbPaper: 0, nbScissors: 0, step: 0}
+    { nbRock: 0, nbPaper: 0, nbScissors: 0, step: 0 },
   ]);
 
   const labels = ["rock", "paper", "scissors"];
@@ -134,7 +134,11 @@ function App() {
     datasets: [
       {
         data: [0, 0, 0],
-        backgroundColor: ["rgba(255, 99, 132, 0.5)", "rgba(0, 99, 132, 0.5)", "rgba(255, 99, 0, 0.5)"],
+        backgroundColor: [
+          "rgba(255, 99, 132, 0.5)",
+          "rgba(0, 99, 132, 0.5)",
+          "rgba(255, 99, 0, 0.5)",
+        ],
       },
     ],
   });
@@ -173,16 +177,26 @@ function App() {
       datasets: [
         {
           data: agentsDetails().map((agentDetails) => agentDetails.agentCount),
-          backgroundColor: ["rgba(255, 99, 132, 0.5)", "rgba(0, 99, 132, 0.5)", "rgba(255, 99, 0, 0.5)"],
+          backgroundColor: [
+            "rgba(255, 99, 132, 0.5)",
+            "rgba(0, 99, 132, 0.5)",
+            "rgba(255, 99, 0, 0.5)",
+          ],
         },
       ],
     });
 
     let _step = lineChartData[lineChartData.length - 1].step;
 
-    setLineChartData(
-      [...lineChartData, {nbRock: agentsDetails()[0].agentCount, nbPaper: agentsDetails()[1].agentCount, nbScissors: agentsDetails()[2].agentCount, step: _step + 1}]
-    );
+    setLineChartData([
+      ...lineChartData,
+      {
+        nbRock: agentsDetails()[0].agentCount,
+        nbPaper: agentsDetails()[1].agentCount,
+        nbScissors: agentsDetails()[2].agentCount,
+        step: _step + 1,
+      },
+    ]);
     // [{nbRock: 1, nbPaper: 1, nbScissors: 1, instant: 500}, {nbRock: 1, nbPaper: 0, nbScissors: 2, instant: 600}]
 
     setData2({
@@ -207,9 +221,7 @@ function App() {
     });
   }, [agents]);
 
-
   function updateAgentsPosition() {
-    
     setAgents((agents) => {
       const allSameType = agents.every(
         (agent, index, arr) => agent.getType() === arr[0].getType()
@@ -222,7 +234,13 @@ function App() {
       }
       return agents.map((agent) => {
         agent.behave(agents);
-        return new IndividualAgent(agent.getType(), agent.getX(), agent.getY(), agent.getIntelligence(), agent.getIsInGroup() === true ? true : false);
+        return new IndividualAgent(
+          agent.getType(),
+          agent.getX(),
+          agent.getY(),
+          agent.getIntelligence(),
+          agent.getIsInGroup() === true ? true : false
+        );
       });
 
       //agents.forEach(agent => agent.calculateNextPosition(agents));
@@ -258,10 +276,18 @@ function App() {
             </MDBModalBody>
 
             <MDBModalFooter>
-              <MDBBtn color="secondary" onClick={toggleShow}>
+              <Button variant="secondary" onClick={toggleShow}>
                 Fermer
-              </MDBBtn>
-              <MDBBtn>Exporter les résultats</MDBBtn>
+              </Button>
+              <Button
+                style={{
+                  backgroundColor: "rgba(0, 99, 132, 0.5)",
+                  borderColor: "rgba(0, 99, 132, 0.5)",
+                  fontWeight: "bold",
+                }}
+              >
+                Exporter les résultats
+              </Button>
             </MDBModalFooter>
           </MDBModalContent>
         </MDBModalDialog>
@@ -270,8 +296,6 @@ function App() {
   };
 
   // const [simulationInitialized, setSimulationInitialized] = useState(null);
-
-  
 
   // const handleCloseInitialization = () => {
   //   setSimulationInitialized(true);
@@ -310,43 +334,87 @@ function App() {
     <>
       <BrowserRouter>
         <AgentsContext.Provider value={[agents, setAgents]}>
-        <Header />
-        <main
-          className="mx-auto p-5"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            flexDirection: "row",
-          }}
-        >
-          <Routes>
-            <Route>
-              <Route
-                path="/"
-                element={
-                  <>
-                    <Grid grid={grid} agents={agents} />
-                    <div className="chart-container" style={{position: "relative", width: "30vw", marginLeft: "5vw"}}>
-                      <Bar options={options} data={data} />
-                      <Line ref={Ref} options={options2} data={data2} style={{marginTop: "15%"}}/>
-                    </div>
-                  </>
-                }
-              />
-            </Route>
-          </Routes>
-        </main>
-        <MyModal/>
-        <WinnerPopUp
-          typeName={
-            winner === "rock"
-              ? "Pierre"
-              : winner === "scissors"
-              ? "Ciseaux"
-              : "Feuille "
-          }
+          <Header />
+          <main
+            className="mx-auto p-5"
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              flexDirection: "row",
+            }}
+          >
+            <Routes>
+              <Route>
+                <Route
+                  path="/"
+                  element={
+                    <>
+                      <Grid grid={grid} agents={agents} />
+                      <div
+                        className="chart-container"
+                        style={{
+                          position: "relative",
+                          width: "30vw",
+                          marginLeft: "5vw",
+                        }}
+                      >
+                        <Bar options={options} data={data} />
+                        <Line
+                          ref={Ref}
+                          options={options2}
+                          data={data2}
+                          style={{ marginTop: "15%" }}
+                        />
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            marginTop: "3vw",
+                          }}
+                        >
+                          <Button
+                            style={{
+                              marginRight: "1vw",
+                              backgroundColor: "rgba(0, 99, 132, 0.5)",
+                              borderColor: "rgba(0, 99, 132, 0.5)",
+                              fontWeight: "bold",
+                            }}
+                            onClick={() => setShowModal(true)}
+                          >
+                            Initialize simulation
+                          </Button>
+                          <Button
+                            style={{
+                              backgroundColor: "rgba(255, 99, 0, 0.5)",
+                              borderColor: "rgba(255, 99, 0, 0.5)",
+                              fontWeight: "bold",
+                            }}
+                          >
+                            Pause simulation
+                          </Button>
+                          <ModalComponent
+                            show={showModal}
+                            onHide={() => setShowModal(false)}
+                          />
+                        </div>
+                      </div>
+                    </>
+                  }
+                />
+              </Route>
+            </Routes>
+          </main>
+
+          <WinnerPopUp
+            typeName={
+              winner === "rock"
+                ? "Pierre"
+                : winner === "scissors"
+                ? "Ciseaux"
+                : "Feuille "
+            }
           />
-          </AgentsContext.Provider>
+        </AgentsContext.Provider>
       </BrowserRouter>
     </>
   );
