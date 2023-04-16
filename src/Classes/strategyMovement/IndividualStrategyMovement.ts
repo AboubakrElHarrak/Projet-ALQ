@@ -156,9 +156,12 @@ export class IndividualStrategyMovement implements StrategyMovement{
         
         
         //condition on agents_adjacents[i].type then sort array based on distance
-        if (agent.getType() === agents_adjacents[i].getType()) {
-          //escape from other agent
-          this.trier_cases_desc(info_tableau_adjacent);
+          if (agent.getType() === agents_adjacents[i].getType()) {
+            
+              console.log(agent.getIsInGroup());
+          //escape from other agent if not in group | get close to other agent if in group
+            agent.getIsInGroup() === false ? this.trier_cases_desc(info_tableau_adjacent) : this.trier_cases_asc(info_tableau_adjacent);
+            
         } else {
           if (this.getWinnerType(agent.getType(), agents_adjacents[i].getType()) === agent.getType()) {
             //get close to other agent
@@ -193,8 +196,8 @@ export class IndividualStrategyMovement implements StrategyMovement{
 
       nextPosition = tab_final_scores.reduce((prev, curr) => prev.finalScore < curr.finalScore ? prev : curr).position;
 
-      console.log("tab_final_scores : ");
-      console.log(tab_final_scores);
+      //console.log("tab_final_scores : ");
+      //console.log(tab_final_scores);
       this.updatePosition(agent, agents, nextPosition.x, nextPosition.y);
     }
     
@@ -213,17 +216,17 @@ export class IndividualStrategyMovement implements StrategyMovement{
     
     //const output = 'next Position ' + this.x + ' ' + this.y + ' -> ' + this.x + ' ' + this.y;
     
-    console.log("voisinage : ");
-    console.log(voisinage);
+    //console.log("voisinage : ");
+    //console.log(voisinage);
 
-    console.log("tableau_adjacent : ");
-    console.log(tableau_adjacent);
+    //console.log("tableau_adjacent : ");
+    //console.log(tableau_adjacent);
 
-    console.log("agents_adjacents : ");
-    console.log(agents_adjacents);
+    //console.log("agents_adjacents : ");
+    //console.log(agents_adjacents);
 
-    console.log("nextPosition : ");
-    console.log(nextPosition);
+    //console.log("nextPosition : ");
+    //console.log(nextPosition);
   }
     
 }

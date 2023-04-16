@@ -29,6 +29,9 @@ import {
   MDBModalFooter,
 } from "mdb-react-ui-kit";
 import { IndividualAgent } from "./Classes/Agent/IndividualAgent";
+import { AgentGroup } from "./Classes/Agent/AgentGroup";
+import MyModal from "./Initialization/Initialization";
+import { AgentsContext } from "./AgentsContext/AgentsContext";
 
 ChartJS.register(
   CategoryScale,
@@ -80,26 +83,45 @@ function App() {
     }
   }
 
+  let RockGroup = new AgentGroup("rock",
+    [
+      new IndividualAgent("rock", 1, 1, 4),
+      new IndividualAgent("rock", 2, 2, 5),
+      new IndividualAgent("rock", 3, 3, 3),
+      new IndividualAgent("rock", 4, 4, 2),
+      new IndividualAgent("rock", 1, 5, 2),
+      new IndividualAgent("rock", 1, 3, 3),
+      new IndividualAgent("rock", 4, 2, 3)
+    ]
+  );
+
   const [agents, setAgents] = useState([
-    new IndividualAgent("rock", 1, 1, 4),
+    // new IndividualAgent("rock", 1, 1, 4),
     new IndividualAgent("scissors", 3, 3),
     new IndividualAgent("scissors", 0, 4),
     new IndividualAgent("scissors", 3, 3, 2),
-    new IndividualAgent("rock", 2, 1, 5),
+    // new IndividualAgent("rock", 2, 1, 5),
     new IndividualAgent("paper", 7, 10, 4),
     new IndividualAgent("paper", 14, 18, 3),
     new IndividualAgent("scissors", 3, 3),
-    new IndividualAgent("rock", 7, 7, 3),
+    // new IndividualAgent("rock", 7, 7, 3),
     new IndividualAgent("paper", 12, 12, 2),
-    new IndividualAgent("rock", 15, 15, 2),
-    new IndividualAgent("rock", 1, 1, 2),
+    // new IndividualAgent("rock", 15, 15, 2),
+    // new IndividualAgent("rock", 1, 1, 2),
     new IndividualAgent("paper", 10, 10, 4),
-    new IndividualAgent("rock", 18, 18, 3),
+    // new IndividualAgent("rock", 18, 18, 3),
     new IndividualAgent("scissors", 5, 5, 2),
-    new IndividualAgent("rock", 7, 7, 3),
+    // new IndividualAgent("rock", 7, 7, 3),
     new IndividualAgent("paper", 12, 12),
     new IndividualAgent("scissors", 15, 15),
+    ...RockGroup.getListAgents()
   ]);
+
+  ///////////////////////////////////////////////////////////////////////////////////////
+
+  RockGroup.behave(agents);
+
+  ///////////////////////////////////////////////////////////////////////////////////////
 
   const [lineChartData, setLineChartData] = useState([
     {nbRock: 0, nbPaper: 0, nbScissors: 0, step: 0}
@@ -187,6 +209,7 @@ function App() {
 
 
   function updateAgentsPosition() {
+    
     setAgents((agents) => {
       const allSameType = agents.every(
         (agent, index, arr) => agent.getType() === arr[0].getType()
@@ -199,7 +222,7 @@ function App() {
       }
       return agents.map((agent) => {
         agent.behave(agents);
-        return new IndividualAgent(agent.getType(), agent.getX(), agent.getY(), agent.getIntelligence());
+        return new IndividualAgent(agent.getType(), agent.getX(), agent.getY(), agent.getIntelligence(), agent.getIsInGroup() === true ? true : false);
       });
 
       //agents.forEach(agent => agent.calculateNextPosition(agents));
@@ -246,9 +269,47 @@ function App() {
     );
   };
 
+  // const [simulationInitialized, setSimulationInitialized] = useState(null);
+
+  
+
+  // const handleCloseInitialization = () => {
+  //   setSimulationInitialized(true);
+  // }
+
+  // const InitialPopUp = () => {
+  //   return (
+  //     <MDBModal show={simulationInitialized !== true} tabIndex="-1">
+  //       <MDBModalDialog>
+  //         <MDBModalContent>
+  //           <MDBModalHeader>
+  //             <MDBModalTitle>Initialiser la simulation</MDBModalTitle>
+  //             <MDBBtn
+  //               className="btn-close"
+  //               color="none"
+  //               onClick={handleCloseInitialization}
+  //             ></MDBBtn>
+  //           </MDBModalHeader>
+  //           <MDBModalBody>
+  //             <h1>gangne !</h1>
+  //           </MDBModalBody>
+
+  //           <MDBModalFooter>
+  //             <MDBBtn color="secondary" onClick={handleCloseInitialization}>
+  //               Fermer
+  //             </MDBBtn>
+  //             <MDBBtn>Exporter les résultats</MDBBtn>
+  //           </MDBModalFooter>
+  //         </MDBModalContent>
+  //       </MDBModalDialog>
+  //     </MDBModal>
+  //   );
+  // };
+
   return (
     <>
       <BrowserRouter>
+        <AgentsContext.Provider value={[agents, setAgents]}>
         <Header />
         <main
           className="mx-auto p-5"
@@ -275,6 +336,7 @@ function App() {
             </Route>
           </Routes>
         </main>
+        <MyModal/>
         <WinnerPopUp
           typeName={
             winner === "rock"
@@ -283,7 +345,8 @@ function App() {
               ? "Ciseaux"
               : "Feuille "
           }
-        />
+          />
+          </AgentsContext.Provider>
       </BrowserRouter>
     </>
   );
