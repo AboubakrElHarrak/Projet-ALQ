@@ -1,5 +1,4 @@
-import './Grid.css';
-
+import "./Grid.css";
 
 export const Grid = ({ grid, agents }) => {
   return (
@@ -8,21 +7,18 @@ export const Grid = ({ grid, agents }) => {
         row.map((col, j) => (
           <div
             key={`${i}-${j}`}
-            className={`grid-item ${
-              agents[col] ? agents[col].type : ''
-                    }`}
-                
-            >
-                {agents
-                  .filter(agent => agent.x === i && agent.y === j)
-                  .map((agent, k) => (
-                    <img
-                      key={k}
-                      src={getImageSource(agent.type)}
-                      alt={agent.type}
-                      className="agent"
-                    />
-                  ))}
+            className={`grid-item ${agents[col] ? agents[col].type : ""}`}
+          >
+            {agents
+              .filter((agent) => agent.x === i && agent.y === j)
+              .map((agent, k) => (
+                <img
+                  key={k}
+                  src={getImageSource(agent.type)}
+                  alt={agent.type}
+                  className="agent"
+                />
+              ))}
           </div>
         ))
       )}
@@ -30,16 +26,15 @@ export const Grid = ({ grid, agents }) => {
   );
 };
 
-
 export function getImageSource(type) {
   switch (type) {
-    case 'rock':
-      return 'rock.svg';
-    case 'paper':
-      return 'paper.svg';
-    case 'scissors':
-      return 'scissors.svg';
+    case "rock":
+      return "rock.svg";
+    case "paper":
+      return "paper.svg";
+    case "scissors":
+      return "scissors.svg";
     default:
-      return '';
+      return "";
   }
 }

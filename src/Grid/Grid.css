@@ -4,7 +4,9 @@
   flex-direction: row;
   width: 802px;
   height: 802px;
-  border: 1px solid black;
+  border: 1px solid rgba(0, 99, 132, 0.5);
+
+  box-shadow: 5px 10px 8px rgba(0, 99, 132, 0.5);
 }
 
 .grid-item {
