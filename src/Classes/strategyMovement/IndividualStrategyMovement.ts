@@ -1,20 +1,55 @@
 import { IndividualAgent } from "../Agent/IndividualAgent";
 import { StrategyMovement } from "./StrategyMovement";
 
+/**
+ * @typedef {Object} t_position
+ * @property {number} x - The x-coordinate of a position
+ * @property {number} y - The y-coordinate of a position
+ */
 type t_position = { x: number; y: number };
+
+/**
+ * @typedef {Object} t_final_score
+ * @property {t_position} position - The position of the final score
+ * @property {number} finalScore - The final score
+ */
 type t_final_score = { position: t_position; finalScore: number };
+
+/**
+ * @typedef {Object} t_info_tableau_adjacent
+ * @property {t_position} position - The position of an adjacent element
+ * @property {number} distance - The distance to the adjacent element
+ * @property {number} score - The score of the adjacent element
+ */
 type t_info_tableau_adjacent = {
   position: t_position;
   distance: number;
   score: number;
 };
 
+/**
+ * A class representing an individual strategy for movement
+ * @implements {StrategyMovement}
+ */
 export class IndividualStrategyMovement implements StrategyMovement {
+  /**
+   * Moves an individual agent
+   * @param {IndividualAgent} agent - The agent to move
+   * @param {IndividualAgent[]} agents - The array of agents
+   * @returns {void}
+   */
   move(agent: IndividualAgent, agents: IndividualAgent[]): void {
     this.calculateNextPosition(agent, agents);
   }
 
   // utility functions --------------------------------------------------
+
+  /**
+   * Returns the winning type given two types
+   * @param {string} type1 - The first type
+   * @param {string} type2 - The second type
+   * @returns {string} - The winning type
+   */
   getWinnerType(type1: string, type2: string) {
     if (type1 === type2) {
       return type1;
@@ -29,6 +64,12 @@ export class IndividualStrategyMovement implements StrategyMovement {
     return type2;
   }
 
+  /**
+   * Returns the distance between two positions
+   * @param {t_position} position - The first position
+   * @param {IndividualAgent} position0 - The second position as an IndividualAgent object
+   * @returns {number} - The distance between the two positions
+   */
   distance(position: t_position, position0: IndividualAgent) {
     return Math.sqrt(
       Math.pow(position.x - position0.getX(), 2) +
@@ -36,6 +77,11 @@ export class IndividualStrategyMovement implements StrategyMovement {
     );
   }
 
+  /**
+   * Sorts an array of t_info_tableau_adjacent elements in descending order
+   * @param {t_info_tableau_adjacent[]} tab - The array to sort
+   * @returns {void}
+   */
   trier_cases_desc(tab: t_info_tableau_adjacent[]) {
     var changed: boolean;
     do {
@@ -51,6 +97,11 @@ export class IndividualStrategyMovement implements StrategyMovement {
     } while (changed);
   }
 
+  /**
+   * Sorts an array of t_info_tableau_adjacent elements in ascending order
+   * @param {t_info_tableau_adjacent[]} tab - The array to sort
+   * @returns {void}
+   */
   trier_cases_asc(tab: t_info_tableau_adjacent[]) {
     var changed: boolean;
     do {
@@ -67,6 +118,14 @@ export class IndividualStrategyMovement implements StrategyMovement {
   }
   //----------------------------------------------------------------------
 
+  /**
+   * Updates the position of an individual agent and detects collisions
+   * @param {IndividualAgent} agent - The agent to update
+   * @param {IndividualAgent[]} agents - The array of agents
+   * @param {number} x - The x-coordinate of the new position
+   * @param {number} y - The y-coordinate of the new position
+   * @returns {void}
+   */
   updatePosition(
     agent: IndividualAgent,
     agents: IndividualAgent[],
@@ -78,6 +137,14 @@ export class IndividualStrategyMovement implements StrategyMovement {
     this.detectCollision(agent, agents, x, y);
   }
 
+  /**
+   * Detects collisions between an individual agent and other agents
+   * @param {IndividualAgent} agent - The agent to check for collisions
+   * @param {IndividualAgent[]} agents - The array of agents
+   * @param {number} x - The x-coordinate of the agent's position
+   * @param {number} y - The y-coordinate of the agent's position
+   * @returns {void}
+   */
   detectCollision(
     agent: IndividualAgent,
     agents: IndividualAgent[],
@@ -104,6 +171,15 @@ export class IndividualStrategyMovement implements StrategyMovement {
     }
   }
 
+  /**
+  *Calculates the next position for the given agent based on its intelligence and adjacent agents.
+  *If there are adjacent agents, it calculates a final score for each adjacent position, based on distance, score and agent types.
+  *The next position is then set to the position with the lowest final score.
+  *If there are no adjacent agents, the next position is chosen randomly.
+  *@param {IndividualAgent} agent - The agent for which to calculate the next position.
+  *@param {IndividualAgent[]} agents - An array of all agents in the environment.
+  (@returns {void}
+  */
   calculateNextPosition(
     agent: IndividualAgent,
     agents: IndividualAgent[]
