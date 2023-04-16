@@ -82,54 +82,60 @@ const ModalComponent: React.FC<Props> = ({ show, onHide }) => {
 
   const handleCreateAgents = (agentCreationType: AgentType["type"]) => {
     if (formState.numAgents > 0) {
-        const agents = formState.agents.map((agent) => ({
-      ...agent,
-      type: formState.agentType,
-    }));
-    if (agentCreationType === "Individual") {
+      const agents = formState.agents.map((agent) => ({
+        ...agent,
+        type: formState.agentType,
+      }));
+      if (agentCreationType === "Individual") {
         console.log("Creating individual agents:", agents);
-        setSimulation(
-            {
-                ...simulation,
-                agents: [...simulation.agents , ...agents.map(
-                    agent => {
-                        return new IndividualAgent(agent.type, agent.x, agent.y, agent.intelligence);
-                    }
-                )]
-            }
+        setSimulation({
+          ...simulation,
+          agents: [
+            ...simulation.agents,
+            ...agents.map((agent) => {
+              return new IndividualAgent(
+                agent.type,
+                agent.x,
+                agent.y,
+                agent.intelligence
+              );
+            }),
+          ],
+        });
+      } else {
+        console.log(
+          "Creating group agents with size:",
+          formState.numAgents,
+          "and agents:",
+          agents
         );
-
-    } else {
-        console.log("Creating group agents with size:", formState.numAgents, "and agents:", agents);
-        let groupAgents : AgentGroup = new AgentGroup(
-            formState.agentType,
-            agents.map(
-                agent => {
-                    return new IndividualAgent(agent.type, agent.x, agent.y, agent.intelligence);
-                }
-            )
+        let groupAgents: AgentGroup = new AgentGroup(
+          formState.agentType,
+          agents.map((agent) => {
+            return new IndividualAgent(
+              agent.type,
+              agent.x,
+              agent.y,
+              agent.intelligence
+            );
+          })
         );
 
         groupAgents.behave(simulation.agents);
-        setSimulation(
-            {
-                ...simulation,
-                agents: [...simulation.agents, ...groupAgents.getListAgents()]
-            }
-        );
+        setSimulation({
+          ...simulation,
+          agents: [...simulation.agents, ...groupAgents.getListAgents()],
+        });
+      }
     }
-    }
-    };
-    
+  };
 
-    const StartSimulation = () => {
-        if (simulation.agents.length > 0) {
-            onHide();
-            setSimulation(
-                {...simulation, simulationStarted:true}
-            )
-        }
+  const StartSimulation = () => {
+    if (simulation.agents.length > 0) {
+      onHide();
+      setSimulation({ ...simulation, simulationStarted: true });
     }
+  };
 
   return (
     <Modal show={show} onHide={onHide}>
@@ -220,7 +226,7 @@ const ModalComponent: React.FC<Props> = ({ show, onHide }) => {
                   <Form.Label>Intelligence</Form.Label>
                   <Form.Control
                     type="number"
-                    min={1}          
+                    min={1}
                     value={agent.intelligence}
                     onChange={(event) =>
                       handleAgentChange(
@@ -237,25 +243,26 @@ const ModalComponent: React.FC<Props> = ({ show, onHide }) => {
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={() => {StartSimulation()}}>
-          Start
-        </Button>
         <Button
           style={{
-            backgroundColor: "rgba(0, 99, 132, 0.5)",
-            borderColor: "rgba(0, 99, 132, 0.5)",
-                  }}
-                  
-            onClick={(e) => handleCreateAgents("Individual")}
+            backgroundColor: "rgba(51, 235, 158, 0.9)",
+            borderColor: "rgba(51, 235, 158, 0.9)",
+          }}
+          onClick={() => {
+            StartSimulation();
+          }}
         >
+          Start
+        </Button>
+        <Button onClick={(e) => handleCreateAgents("Individual")}>
           Create individual agents
         </Button>
         <Button
           style={{
             backgroundColor: "rgba(0, 99, 132, 0.5)",
             borderColor: "rgba(0, 99, 132, 0.5)",
-                  }}
-                  onClick={ (e) => handleCreateAgents("Group")}
+          }}
+          onClick={(e) => handleCreateAgents("Group")}
         >
           Create group agents
         </Button>

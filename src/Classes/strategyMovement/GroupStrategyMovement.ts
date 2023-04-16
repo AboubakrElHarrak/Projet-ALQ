@@ -3,17 +3,13 @@ import { IndividualAgent } from "../Agent/IndividualAgent";
 import { StrategyMovement } from "./StrategyMovement";
 
 export class GroupStrategyMovement implements StrategyMovement {
-    
-    move(agentGroup :AgentGroup): void {
-        let agentGroupList : IndividualAgent[] = agentGroup.getListAgents();
-        
-        //console.log("grouup");
+  move(agentGroup: AgentGroup): void {
+    let agentGroupList: IndividualAgent[] = agentGroup.getListAgents();
 
-        agentGroupList.forEach((agent : IndividualAgent) => {
-            agent.setIsInGroup(true);
-        })
+    agentGroupList.forEach((agent: IndividualAgent) => {
+      agent.setIsInGroup(true);
+    });
 
-        agentGroup.setListAgents(agentGroupList);
-    }
-    
+    agentGroup.setListAgents(agentGroupList);
+  }
 }

@@ -17,21 +17,11 @@ import {
 import { Bar, Line } from "react-chartjs-2";
 import "chart.js/auto";
 
-import {
-  MDBBtn,
-  MDBModal,
-  MDBModalDialog,
-  MDBModalContent,
-  MDBModalHeader,
-  MDBModalTitle,
-  MDBModalBody,
-  MDBModalFooter,
-} from "mdb-react-ui-kit";
 import { IndividualAgent } from "./Classes/Agent/IndividualAgent";
-import { AgentGroup } from "./Classes/Agent/AgentGroup";
 import { SimulationContext } from "./AgentsContext/SimulationContext";
 import ModalComponent from "./Initialization/Initialization";
 import { Button } from "react-bootstrap";
+import { WinnerPopUp } from "./WinnerPopUp/WinnerPopUp";
 
 ChartJS.register(
   CategoryScale,
@@ -86,48 +76,10 @@ function App() {
     }
   }
 
-  // let RockGroup = new AgentGroup("rock", [
-  //   new IndividualAgent("rock", 1, 1, 4),
-  //   new IndividualAgent("rock", 2, 2, 5),
-  //   new IndividualAgent("rock", 3, 3, 3),
-  //   new IndividualAgent("rock", 4, 4, 2),
-  //   new IndividualAgent("rock", 1, 5, 2),
-  //   new IndividualAgent("rock", 1, 3, 3),
-  //   new IndividualAgent("rock", 4, 2, 3),
-  // ]);
-
-
-  const [simulation, setSimulation] = useState(
-    {
-      simulationStarted: false,
-      agents: []
-    }
-    // // new IndividualAgent("rock", 1, 1, 4),
-    // new IndividualAgent("scissors", 3, 3),
-    // new IndividualAgent("scissors", 0, 4),
-    // new IndividualAgent("scissors", 3, 3, 2),
-    // // new IndividualAgent("rock", 2, 1, 5),
-    // new IndividualAgent("paper", 7, 10, 4),
-    // new IndividualAgent("paper", 14, 18, 3),
-    // new IndividualAgent("scissors", 3, 3),
-    // // new IndividualAgent("rock", 7, 7, 3),
-    // new IndividualAgent("paper", 12, 12, 2),
-    // // new IndividualAgent("rock", 15, 15, 2),
-    // // new IndividualAgent("rock", 1, 1, 2),
-    // new IndividualAgent("paper", 10, 10, 4),
-    // // new IndividualAgent("rock", 18, 18, 3),
-    // new IndividualAgent("scissors", 5, 5, 2),
-    // // new IndividualAgent("rock", 7, 7, 3),
-    // new IndividualAgent("paper", 12, 12),
-    // new IndividualAgent("scissors", 15, 15),
-    // ...RockGroup.getListAgents(),
-  );
-
-  ///////////////////////////////////////////////////////////////////////////////////////
-
-  //RockGroup.behave(agents);
-
-  ///////////////////////////////////////////////////////////////////////////////////////
+  const [simulation, setSimulation] = useState({
+    simulationStarted: false,
+    agents: [],
+  });
 
   const [lineChartData, setLineChartData] = useState([
     { nbRock: 0, nbPaper: 0, nbScissors: 0, step: 0 },
@@ -242,88 +194,47 @@ function App() {
       return {
         ...simulation,
         agents: simulation.agents.map((agent) => {
-                agent.behave(simulation.agents);
-                return new IndividualAgent(
-                  agent.getType(),
-                  agent.getX(),
-                  agent.getY(),
-                  agent.getIntelligence(),
-                  agent.getIsInGroup() === true ? true : false
-                );
-              })
+          agent.behave(simulation.agents);
+          return new IndividualAgent(
+            agent.getType(),
+            agent.getX(),
+            agent.getY(),
+            agent.getIntelligence(),
+            agent.getIsInGroup() === true ? true : false
+          );
+        }),
       };
-
-      //agents.forEach(agent => agent.calculateNextPosition(agents));
-
-      //agents[0].calculateNextPosition(agents);
-      //return agents;
     });
   }
 
   useEffect(() => {
     if (simulation.simulationStarted) {
       intervalIdRef.current = setInterval(() => {
-      updateAgentsPosition();
+        updateAgentsPosition();
       }, 100); // update position every 0.1 second
     }
     return () => clearInterval(intervalIdRef.current);
   }, [simulation.simulationStarted]);
 
   const toggleShow = () => setsimulationFinished(false);
-  const WinnerPopUp = ({ typeName }) => {
-    return (
-      <MDBModal show={simulationFinished} tabIndex="-1">
-        <MDBModalDialog>
-          <MDBModalContent>
-            <MDBModalHeader>
-              <MDBModalTitle>Résultat de la simulation</MDBModalTitle>
-              <MDBBtn
-                className="btn-close"
-                color="none"
-                onClick={toggleShow}
-              ></MDBBtn>
-            </MDBModalHeader>
-            <MDBModalBody>
-              <h1>{typeName} gangne !</h1>
-            </MDBModalBody>
-
-            <MDBModalFooter>
-              <Button variant="secondary" onClick={toggleShow}>
-                Fermer
-              </Button>
-              <Button
-                style={{
-                  backgroundColor: "rgba(0, 99, 132, 0.5)",
-                  borderColor: "rgba(0, 99, 132, 0.5)",
-                  fontWeight: "bold",
-                }}
-              >
-                Exporter les résultats
-              </Button>
-            </MDBModalFooter>
-          </MDBModalContent>
-        </MDBModalDialog>
-      </MDBModal>
-    );
-  };
 
   const handlePause = () => {
-    setSimulation(
-      {
-        ...simulation,
-        simulationStarted: !simulation.simulationStarted
-      }
-    )
+    setSimulation({
+      ...simulation,
+      simulationStarted: !simulation.simulationStarted,
+    });
     console.log(simulation.simulationStarted);
-  }
+  };
 
   const getResumePause = () => {
-    return simulation.simulationStarted ? "Pause simulation" : "Resume simulation";
-  }
+    return simulation.simulationStarted
+      ? "Pause simulation"
+      : "Resume simulation";
+  };
 
   const refreshPage = () => {
     window.location.reload();
-  }
+  };
 
   return (
     <>
@@ -385,32 +296,32 @@ function App() {
                           <Button
                             style={{
                               marginRight: "1vw",
-                              backgroundColor: "rgba(255, 99, 0, 0.5)",
-                              borderColor: "rgba(255, 99, 0, 0.5)",
+                              backgroundColor: "rgba(228, 109, 35, 0.5)",
+                              borderColor: "rgba(228, 109, 35, 0.5)",
                               fontWeight: "bold",
                             }}
-
                             onClick={handlePause}
-
-                            disabled={!simulationInitialized || simulationFinished}
+                            disabled={
+                              !simulationInitialized || simulationFinished
+                            }
                           >
                             {getResumePause()}
                           </Button>
                           <Button
                             style={{
-                              backgroundColor: "rgba(100, 255, 190, 0.9)",
-                              borderColor: "rgba(0, 255, 190, 0.7)",
+                              backgroundColor: "rgba(51, 235, 158, 0.9)",
+                              borderColor: "rgba(51, 235, 158, 0.9)",
                               fontWeight: "bold",
                             }}
-
                             onClick={refreshPage}
-
                           >
                             Restart
                           </Button>
                           <ModalComponent
                             show={showModal}
-                            onHide={() => {setShowModal(false)}}
+                            onHide={() => {
+                              setShowModal(false);
+                            }}
                           />
                         </div>
                       </div>
@@ -424,11 +335,13 @@ function App() {
           <WinnerPopUp
             typeName={
               winner === "rock"
-                ? "Pierre"
+                ? "Rock"
                 : winner === "scissors"
-                ? "Ciseaux"
-                : "Feuille "
+                ? "Scissors"
+                : "Paper "
             }
+            simulationFinished={simulationFinished}
+            toggleShow={toggleShow}
           />
         </SimulationContext.Provider>
       </BrowserRouter>
