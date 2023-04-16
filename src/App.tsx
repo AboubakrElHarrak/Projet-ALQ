@@ -29,7 +29,7 @@ import {
 } from "mdb-react-ui-kit";
 import { IndividualAgent } from "./Classes/Agent/IndividualAgent";
 import { AgentGroup } from "./Classes/Agent/AgentGroup";
-import { AgentsContext } from "./AgentsContext/AgentsContext";
+import { SimulationContext } from "./AgentsContext/SimulationContext";
 import ModalComponent from "./Initialization/Initialization";
 import { Button } from "react-bootstrap";
 
@@ -76,6 +76,7 @@ function App() {
   const intervalIdRef = useRef(null);
   const [winner, setWinner] = useState(null);
   const [simulationFinished, setsimulationFinished] = useState(false);
+  const [simulationInitialized, setsimulationInitialized] = useState(false);
 
   const grid = [];
   for (let i = 0; i < 20; i++) {
@@ -85,41 +86,46 @@ function App() {
     }
   }
 
-  let RockGroup = new AgentGroup("rock", [
-    new IndividualAgent("rock", 1, 1, 4),
-    new IndividualAgent("rock", 2, 2, 5),
-    new IndividualAgent("rock", 3, 3, 3),
-    new IndividualAgent("rock", 4, 4, 2),
-    new IndividualAgent("rock", 1, 5, 2),
-    new IndividualAgent("rock", 1, 3, 3),
-    new IndividualAgent("rock", 4, 2, 3),
-  ]);
+  // let RockGroup = new AgentGroup("rock", [
+  //   new IndividualAgent("rock", 1, 1, 4),
+  //   new IndividualAgent("rock", 2, 2, 5),
+  //   new IndividualAgent("rock", 3, 3, 3),
+  //   new IndividualAgent("rock", 4, 4, 2),
+  //   new IndividualAgent("rock", 1, 5, 2),
+  //   new IndividualAgent("rock", 1, 3, 3),
+  //   new IndividualAgent("rock", 4, 2, 3),
+  // ]);
 
-  const [agents, setAgents] = useState([
-    // new IndividualAgent("rock", 1, 1, 4),
-    new IndividualAgent("scissors", 3, 3),
-    new IndividualAgent("scissors", 0, 4),
-    new IndividualAgent("scissors", 3, 3, 2),
-    // new IndividualAgent("rock", 2, 1, 5),
-    new IndividualAgent("paper", 7, 10, 4),
-    new IndividualAgent("paper", 14, 18, 3),
-    new IndividualAgent("scissors", 3, 3),
-    // new IndividualAgent("rock", 7, 7, 3),
-    new IndividualAgent("paper", 12, 12, 2),
-    // new IndividualAgent("rock", 15, 15, 2),
-    // new IndividualAgent("rock", 1, 1, 2),
-    new IndividualAgent("paper", 10, 10, 4),
-    // new IndividualAgent("rock", 18, 18, 3),
-    new IndividualAgent("scissors", 5, 5, 2),
-    // new IndividualAgent("rock", 7, 7, 3),
-    new IndividualAgent("paper", 12, 12),
-    new IndividualAgent("scissors", 15, 15),
-    ...RockGroup.getListAgents(),
-  ]);
+
+  const [simulation, setSimulation] = useState(
+    {
+      simulationStarted: false,
+      agents: []
+    }
+    // // new IndividualAgent("rock", 1, 1, 4),
+    // new IndividualAgent("scissors", 3, 3),
+    // new IndividualAgent("scissors", 0, 4),
+    // new IndividualAgent("scissors", 3, 3, 2),
+    // // new IndividualAgent("rock", 2, 1, 5),
+    // new IndividualAgent("paper", 7, 10, 4),
+    // new IndividualAgent("paper", 14, 18, 3),
+    // new IndividualAgent("scissors", 3, 3),
+    // // new IndividualAgent("rock", 7, 7, 3),
+    // new IndividualAgent("paper", 12, 12, 2),
+    // // new IndividualAgent("rock", 15, 15, 2),
+    // // new IndividualAgent("rock", 1, 1, 2),
+    // new IndividualAgent("paper", 10, 10, 4),
+    // // new IndividualAgent("rock", 18, 18, 3),
+    // new IndividualAgent("scissors", 5, 5, 2),
+    // // new IndividualAgent("rock", 7, 7, 3),
+    // new IndividualAgent("paper", 12, 12),
+    // new IndividualAgent("scissors", 15, 15),
+    // ...RockGroup.getListAgents(),
+  );
 
   ///////////////////////////////////////////////////////////////////////////////////////
 
-  RockGroup.behave(agents);
+  //RockGroup.behave(agents);
 
   ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -160,7 +166,7 @@ function App() {
 
       labels.forEach((label) => agentsMap.set(label, 0));
 
-      agents.forEach((agent) => {
+      simulation.agents.forEach((agent) => {
         let agentCount = agentsMap.get(agent.getType()) || 0;
         agentsMap.set(agent.getType(), agentCount + 1);
       });
@@ -219,29 +225,33 @@ function App() {
         },
       ],
     });
-  }, [agents]);
+  }, [simulation.agents]);
 
   function updateAgentsPosition() {
-    setAgents((agents) => {
-      const allSameType = agents.every(
+    setSimulation(() => {
+      const allSameType = simulation.agents.every(
         (agent, index, arr) => agent.getType() === arr[0].getType()
       );
-      if (allSameType) {
+      if (allSameType && simulation.agents.length > 0) {
         clearInterval(intervalIdRef.current);
-        setWinner(agents[0].getType());
+        setWinner(simulation.agents[0].getType());
         setsimulationFinished(true);
-        return agents;
+        setSimulation({ ...simulation, simulationStarted: false });
+        return simulation;
       }
-      return agents.map((agent) => {
-        agent.behave(agents);
-        return new IndividualAgent(
-          agent.getType(),
-          agent.getX(),
-          agent.getY(),
-          agent.getIntelligence(),
-          agent.getIsInGroup() === true ? true : false
-        );
-      });
+      return {
+        ...simulation,
+        agents: simulation.agents.map((agent) => {
+                agent.behave(simulation.agents);
+                return new IndividualAgent(
+                  agent.getType(),
+                  agent.getX(),
+                  agent.getY(),
+                  agent.getIntelligence(),
+                  agent.getIsInGroup() === true ? true : false
+                );
+              })
+      };
 
       //agents.forEach(agent => agent.calculateNextPosition(agents));
 
@@ -251,11 +261,13 @@ function App() {
   }
 
   useEffect(() => {
-    intervalIdRef.current = setInterval(() => {
+    if (simulation.simulationStarted) {
+      intervalIdRef.current = setInterval(() => {
       updateAgentsPosition();
-    }, 100); // update position every 0.1 second
+      }, 100); // update position every 0.1 second
+    }
     return () => clearInterval(intervalIdRef.current);
-  }, []);
+  }, [simulation.simulationStarted]);
 
   const toggleShow = () => setsimulationFinished(false);
   const WinnerPopUp = ({ typeName }) => {
@@ -295,45 +307,28 @@ function App() {
     );
   };
 
-  // const [simulationInitialized, setSimulationInitialized] = useState(null);
+  const handlePause = () => {
+    setSimulation(
+      {
+        ...simulation,
+        simulationStarted: !simulation.simulationStarted
+      }
+    )
+    console.log(simulation.simulationStarted);
+  }
 
-  // const handleCloseInitialization = () => {
-  //   setSimulationInitialized(true);
-  // }
+  const getResumePause = () => {
+    return simulation.simulationStarted ? "Pause simulation" : "Resume simulation";
+  }
 
-  // const InitialPopUp = () => {
-  //   return (
-  //     <MDBModal show={simulationInitialized !== true} tabIndex="-1">
-  //       <MDBModalDialog>
-  //         <MDBModalContent>
-  //           <MDBModalHeader>
-  //             <MDBModalTitle>Initialiser la simulation</MDBModalTitle>
-  //             <MDBBtn
-  //               className="btn-close"
-  //               color="none"
-  //               onClick={handleCloseInitialization}
-  //             ></MDBBtn>
-  //           </MDBModalHeader>
-  //           <MDBModalBody>
-  //             <h1>gangne !</h1>
-  //           </MDBModalBody>
-
-  //           <MDBModalFooter>
-  //             <MDBBtn color="secondary" onClick={handleCloseInitialization}>
-  //               Fermer
-  //             </MDBBtn>
-  //             <MDBBtn>Exporter les résultats</MDBBtn>
-  //           </MDBModalFooter>
-  //         </MDBModalContent>
-  //       </MDBModalDialog>
-  //     </MDBModal>
-  //   );
-  // };
+  const refreshPage = () => {
+    window.location.reload();
+  }
 
   return (
     <>
       <BrowserRouter>
-        <AgentsContext.Provider value={[agents, setAgents]}>
+        <SimulationContext.Provider value={[simulation, setSimulation]}>
           <Header />
           <main
             className="mx-auto p-5"
@@ -349,7 +344,7 @@ function App() {
                   path="/"
                   element={
                     <>
-                      <Grid grid={grid} agents={agents} />
+                      <Grid grid={grid} agents={simulation.agents} />
                       <div
                         className="chart-container"
                         style={{
@@ -379,22 +374,43 @@ function App() {
                               borderColor: "rgba(0, 99, 132, 0.5)",
                               fontWeight: "bold",
                             }}
-                            onClick={() => setShowModal(true)}
+                            onClick={() => {
+                              setShowModal(true);
+                              setsimulationInitialized(true);
+                            }}
+                            disabled={simulationInitialized}
                           >
                             Initialize simulation
                           </Button>
                           <Button
                             style={{
+                              marginRight: "1vw",
                               backgroundColor: "rgba(255, 99, 0, 0.5)",
                               borderColor: "rgba(255, 99, 0, 0.5)",
                               fontWeight: "bold",
                             }}
+
+                            onClick={handlePause}
+
+                            disabled={!simulationInitialized || simulationFinished}
                           >
-                            Pause simulation
+                            {getResumePause()}
+                          </Button>
+                          <Button
+                            style={{
+                              backgroundColor: "rgba(100, 255, 190, 0.9)",
+                              borderColor: "rgba(0, 255, 190, 0.7)",
+                              fontWeight: "bold",
+                            }}
+
+                            onClick={refreshPage}
+
+                          >
+                            Restart
                           </Button>
                           <ModalComponent
                             show={showModal}
-                            onHide={() => setShowModal(false)}
+                            onHide={() => {setShowModal(false)}}
                           />
                         </div>
                       </div>
@@ -414,7 +430,7 @@ function App() {
                 : "Feuille "
             }
           />
-        </AgentsContext.Provider>
+        </SimulationContext.Provider>
       </BrowserRouter>
     </>
   );

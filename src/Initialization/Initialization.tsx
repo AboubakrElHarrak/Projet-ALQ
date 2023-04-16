@@ -1,5 +1,8 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Button, Modal, Form } from "react-bootstrap";
+import { SimulationContext } from "../AgentsContext/SimulationContext";
+import { IndividualAgent } from "../Classes/Agent/IndividualAgent";
+import { AgentGroup } from "../Classes/Agent/AgentGroup";
 
 interface Props {
   show: boolean;
@@ -12,15 +15,15 @@ interface Agent {
   intelligence: number;
 }
 
-interface IndividualAgent extends Agent {
+interface t_IndividualAgent extends Agent {
   type: "Individual";
 }
 
-interface GroupAgent extends Agent {
+interface t_GroupAgent extends Agent {
   type: "Group";
 }
 
-type AgentType = IndividualAgent | GroupAgent;
+type AgentType = t_IndividualAgent | t_GroupAgent;
 
 const initialFormState: {
   agentType: "rock" | "paper" | "scissors";
@@ -33,6 +36,8 @@ const initialFormState: {
 };
 
 const ModalComponent: React.FC<Props> = ({ show, onHide }) => {
+  const [simulation, setSimulation] = useContext(SimulationContext);
+
   const [formState, setFormState] = useState(initialFormState);
 
   const handleAgentTypeChange = (
@@ -50,7 +55,7 @@ const ModalComponent: React.FC<Props> = ({ show, onHide }) => {
     const numAgents = parseInt(event.target.value);
     const agents: Agent[] = [];
     for (let i = 0; i < numAgents; i++) {
-      agents.push({ x: 0, y: 0, intelligence: 0 });
+      agents.push({ x: 0, y: 0, intelligence: 1 });
     }
     setFormState({
       ...formState,
@@ -75,26 +80,60 @@ const ModalComponent: React.FC<Props> = ({ show, onHide }) => {
     });
   };
 
-  const handleCreateAgents = (agentType: AgentType["type"]) => {
-    const agents = formState.agents.map((agent) => ({
+  const handleCreateAgents = (agentCreationType: AgentType["type"]) => {
+    if (formState.numAgents > 0) {
+        const agents = formState.agents.map((agent) => ({
       ...agent,
-      type: agentType,
+      type: formState.agentType,
     }));
-    if (agentType === "Individual") {
-      console.log("Creating individual agents:", agents);
+    if (agentCreationType === "Individual") {
+        console.log("Creating individual agents:", agents);
+        setSimulation(
+            {
+                ...simulation,
+                agents: [...simulation.agents , ...agents.map(
+                    agent => {
+                        return new IndividualAgent(agent.type, agent.x, agent.y, agent.intelligence);
+                    }
+                )]
+            }
+        );
+
     } else {
-      console.log(
-        "Creating group agents with size:",
-        formState.numAgents,
-        "and agents:",
-        agents
-      );
+        console.log("Creating group agents with size:", formState.numAgents, "and agents:", agents);
+        let groupAgents : AgentGroup = new AgentGroup(
+            formState.agentType,
+            agents.map(
+                agent => {
+                    return new IndividualAgent(agent.type, agent.x, agent.y, agent.intelligence);
+                }
+            )
+        );
+
+        groupAgents.behave(simulation.agents);
+        setSimulation(
+            {
+                ...simulation,
+                agents: [...simulation.agents, ...groupAgents.getListAgents()]
+            }
+        );
     }
-  };
+    }
+    };
+    
+
+    const StartSimulation = () => {
+        if (simulation.agents.length > 0) {
+            onHide();
+            setSimulation(
+                {...simulation, simulationStarted:true}
+            )
+        }
+    }
 
   return (
     <Modal show={show} onHide={onHide}>
-      <Modal.Header closeButton>
+      <Modal.Header>
         <Modal.Title
           style={{ color: "rgba(0, 99, 132, 0.5)", fontWeight: "bold" }}
         >
@@ -181,7 +220,7 @@ const ModalComponent: React.FC<Props> = ({ show, onHide }) => {
                   <Form.Label>Intelligence</Form.Label>
                   <Form.Control
                     type="number"
-                    min={0}
+                    min={1}          
                     value={agent.intelligence}
                     onChange={(event) =>
                       handleAgentChange(
@@ -198,14 +237,16 @@ const ModalComponent: React.FC<Props> = ({ show, onHide }) => {
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>
-          Close
+        <Button variant="secondary" onClick={() => {StartSimulation()}}>
+          Start
         </Button>
         <Button
           style={{
             backgroundColor: "rgba(0, 99, 132, 0.5)",
             borderColor: "rgba(0, 99, 132, 0.5)",
-          }}
+                  }}
+                  
+            onClick={(e) => handleCreateAgents("Individual")}
         >
           Create individual agents
         </Button>
@@ -213,7 +254,8 @@ const ModalComponent: React.FC<Props> = ({ show, onHide }) => {
           style={{
             backgroundColor: "rgba(0, 99, 132, 0.5)",
             borderColor: "rgba(0, 99, 132, 0.5)",
-          }}
+                  }}
+                  onClick={ (e) => handleCreateAgents("Group")}
         >
           Create group agents
         </Button>

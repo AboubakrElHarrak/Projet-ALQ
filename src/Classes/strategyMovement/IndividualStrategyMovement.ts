@@ -158,7 +158,7 @@ export class IndividualStrategyMovement implements StrategyMovement{
         //condition on agents_adjacents[i].type then sort array based on distance
           if (agent.getType() === agents_adjacents[i].getType()) {
             
-              console.log(agent.getIsInGroup());
+              //console.log(agent.getIsInGroup());
           //escape from other agent if not in group | get close to other agent if in group
             agent.getIsInGroup() === false ? this.trier_cases_desc(info_tableau_adjacent) : this.trier_cases_asc(info_tableau_adjacent);
             

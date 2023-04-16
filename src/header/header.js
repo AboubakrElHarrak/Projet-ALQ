@@ -3,19 +3,15 @@ import { Link } from 'react-router-dom';
 export const Header = () => {
     const menus = [
         {
-          name: 'Simulation',
+          name: 'Multi Agent Simulation of Rock Paper Scissors game',
           url: '/',
         },
-        {
-          name: 'Résultats',
-          url: '/results',
-        }
       ];
     
       const navItems = menus.map(menu => {
         return (
           <li className="nav-item mx-3" key={menu.url}>
-            <Link className="nav-link active" aria-current="page" to={menu.url}>{menu.name}</Link >
+            <Link className="nav-link active" aria-current="page" to={menu.url}><h5>{menu.name}</h5></Link >
           </li>
         );
       });
